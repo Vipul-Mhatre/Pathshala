@@ -1,7 +1,8 @@
 const express = require('express');
-const connectDB = require('./config/db');
-const dotenv = require('dotenv');
 const cors = require('cors');
+const dotenv = require('dotenv');
+const connectDB = require('./config/db');
+const authRoutes = require('./routes/authRoutes');
 
 dotenv.config();
 connectDB();
@@ -10,10 +11,9 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/superuser', require('./routes/superuserRoutes'));
-app.use('/api/schools', require('./routes/schoolRoutes'));
-app.use('/api /schools/students', require('./routes/studentRoutes'));
-app.use('/api/schools/buses', require ('./routes/busRoutes'));
+app.use('/api/auth', authRoutes);
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
