@@ -1,11 +1,10 @@
-// models/User.js
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
 const userSchema = new mongoose.Schema({
   fullName: String,
   email: { type: String, unique: true },
-  password: String, // Encrypted password
+  password: String, 
   role: { type: String, enum: ['superuser', 'school'], required: true },
   createdAt: { type: Date, default: Date.now },
 });
