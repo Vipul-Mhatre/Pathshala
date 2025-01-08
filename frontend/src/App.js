@@ -1,19 +1,21 @@
-import React from 'react';
-import { Route, Routes } from 'react-router-dom'; // Don't import Router here anymore
-import Login from './components/Login';
-import Dashboard from './components/Dashboard';
-import ManageStudents from './components/ManageStudents';
-import ManageBuses from './components/ManageBuses';
-import AttendanceTracking from './components/AttendanceTracking';
+import React, { useState } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import Login from "./components/Login";
+import Dashboard from "./components/Dashboard";
+import SchoolDashboard from "./components/SchoolDashboard";
 
 const App = () => {
+  const [userRole, setUserRole] = useState(null);
+
   return (
     <Routes>
-      <Route path="/" element={<Login />} />
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/manage-students" element={<ManageStudents />} />
-      <Route path="/manage-buses" element={<ManageBuses />} />
-      <Route path="/attendance-tracking" element={<AttendanceTracking />} />
+      <Route path="/" element={<Login setUserRole={setUserRole} />} />
+      <Route
+        path="/dashboard"
+        element={
+          userRole === "superuser" ? <Dashboard /> : userRole === "school" ? <SchoolDashboard /> : <Navigate to="/" />
+        }
+      />
     </Routes>
   );
 };

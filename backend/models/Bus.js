@@ -1,13 +1,16 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const busSchema = new mongoose.Schema({
-  schoolId: { type: mongoose.Schema.Types.ObjectId, ref: 'School' },
-  busNumber: { type: String, unique: true },
-  deviceID: { type: String, unique: true },
-  driverName: String,
-  driverContactNumber: String,
-  currentLocation: { lat: Number, lon: Number },
-  createdAt: { type: Date, default: Date.now }
+const BusSchema = new mongoose.Schema({
+  schoolId: { type: mongoose.Schema.Types.ObjectId, ref: "School", required: true },
+  busNumber: { type: String, unique: true, required: true },
+  deviceID: { type: String, unique: true, required: true },
+  driverName: { type: String, required: true },
+  driverContactNumber: { type: String, required: true },
+  currentLocation: {
+    lat: { type: Number },
+    lon: { type: Number },
+  },
+  createdAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model('Bus', busSchema);
+module.exports = mongoose.model("Bus", BusSchema);

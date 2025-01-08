@@ -1,10 +1,10 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-const superuserSchema = new mongoose.Schema({
-  fullName: String,
-  email: { type: String, unique: true },
-  password: String,
+const SuperuserSchema = new mongoose.Schema({
+  fullName: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true }, 
   createdAt: { type: Date, default: Date.now },
 });
 
-module.exports = mongoose.model('Superuser', superuserSchema);
+module.exports = mongoose.model("Superuser", SuperuserSchema);
