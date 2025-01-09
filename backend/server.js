@@ -26,7 +26,7 @@ app.use(
 app.use(express.json());
 
 // Routes
-app.use("/api/superusers", superuserRoutes);
+app.use("/api/superuser", superuserRoutes);
 app.use("/api/schools", schoolRoutes);
 app.use("/api/students", studentRoutes);
 app.use("/api/buses", busRoutes);
