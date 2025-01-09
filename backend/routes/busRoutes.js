@@ -1,54 +1,50 @@
-const express = require("express");
-const { protect } = require("../middleware/authMiddleware");
-const Bus = require("../models/Bus");
-
+const express = require('express');
 const router = express.Router();
+const { protect } = require('../middleware/authMiddleware');
+const Bus = require('../models/Bus');
 
-// Add a Bus
-router.post("/", protect("school"), async (req, res) => {
-  const { busNumber, deviceID, driverName, driverContactNumber, currentLocation } = req.body;
-
+// Get all buses for a school
+router.get('/', protect('school'), async (req, res) => {
   try {
-    const newBus = new Bus({
-      schoolId: req.user.schoolId,
-      busNumber,
-      deviceID,
-      driverName,
-      driverContactNumber,
-      currentLocation,
+    const buses = await Bus.find({ schoolId: req.school._id });
+    res.json(buses);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Add new bus
+router.post('/', protect('school'), async (req, res) => {
+  try {
+    const bus = new Bus({
+      ...req.body,
+      schoolId: req.school._id
     });
 
-    const savedBus = await newBus.save();
+    const savedBus = await bus.save();
     res.status(201).json(savedBus);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
 });
 
-// Get Buses
-router.get("/", protect("school"), async (req, res) => {
+// Update bus location
+router.patch('/:id/location', protect('school'), async (req, res) => {
   try {
-    const buses = await Bus.find({ schoolId: req.user.schoolId });
-    res.json(buses);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-// Update Bus Location
-router.put("/location/:id", protect("school"), async (req, res) => {
-  const { id } = req.params;
-  const { lat, lon } = req.body;
-
-  try {
-    const updatedBus = await Bus.findByIdAndUpdate(
-      id,
+    const { lat, lon } = req.body;
+    const bus = await Bus.findOneAndUpdate(
+      { _id: req.params.id, schoolId: req.school._id },
       { currentLocation: { lat, lon } },
       { new: true }
     );
-    res.json(updatedBus);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
+
+    if (!bus) {
+      return res.status(404).json({ message: 'Bus not found' });
+    }
+
+    res.json(bus);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
   }
 });
 

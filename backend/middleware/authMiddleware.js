@@ -1,18 +1,35 @@
 const jwt = require("jsonwebtoken");
+const School = require('../models/School');
+const Superuser = require('../models/Superuser');
 
-const protect = (role) => (req, res, next) => {
-  const token = req.header("Authorization")?.split(" ")[1];
-  if (!token) return res.status(401).json({ message: "Not authorized" });
-
+exports.protect = (role) => async (req, res, next) => {
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (decoded.role !== role) {
-      return res.status(403).json({ message: "Forbidden: Incorrect Role" });
+    // Get token from header
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+
+    if (!token) {
+      return res.status(401).json({ message: 'No token, authorization denied' });
     }
+
+    // Verify token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (decoded.role !== role) {
+      return res.status(403).json({ message: 'Not authorized for this role' });
+    }
+
+    if (role === 'school') {
+      const school = await School.findById(decoded.id).select('-password');
+      if (!school) {
+        return res.status(401).json({ message: 'School not found' });
+      }
+      req.school = school;
+    }
+
     req.user = decoded;
     next();
   } catch (err) {
-    res.status(401).json({ message: "Token is not valid" });
+    res.status(401).json({ message: 'Token is not valid' });
   }
 };
 

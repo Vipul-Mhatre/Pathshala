@@ -5,7 +5,6 @@ const { protect } = require("../middleware/authMiddleware");
 const School = require("../models/School");
 const Student = require("../models/Student");
 const Bus = require("../models/Bus");
-const auth = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -13,38 +12,86 @@ const router = express.Router();
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    
-    const school = await School.findOne({ email });
+    console.log("Login attempt for:", email);
+
+    // Find school and handle case sensitivity
+    const school = await School.findOne({ 
+      email: { $regex: new RegExp(`^${email}$`, 'i') }
+    });
+
     if (!school) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      console.log("No school found with email:", email);
+      return res.status(401).json({ 
+        message: "Invalid credentials",
+        details: "No school found with this email"
+      });
     }
 
-    const isMatch = await school.comparePassword(password);
+    const isMatch = await bcrypt.compare(password, school.password);
+    console.log("Password match result:", isMatch);
+
     if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials' });
+      return res.status(401).json({ 
+        message: "Invalid credentials",
+        details: "Password does not match"
+      });
     }
 
     const token = jwt.sign(
-      { id: school._id, role: 'school' },
+      { 
+        id: school._id, 
+        role: "school",
+        email: school.email,
+        name: school.name
+      },
       process.env.JWT_SECRET,
-      { expiresIn: '1d' }
+      { expiresIn: "1d" }
     );
 
-    res.json({ token, school: { id: school._id, name: school.name } });
+    res.json({
+      success: true,
+      token,
+      school: {
+        id: school._id,
+        email: school.email,
+        name: school.name
+      }
+    });
+
   } catch (error) {
-    res.status(500).json({ message: 'Server error' });
+    console.error("Login error:", error);
+    res.status(500).json({ 
+      message: "Server error",
+      details: error.message 
+    });
   }
 });
 
 // Get School Dashboard Summary
 router.get("/dashboard", protect("school"), async (req, res) => {
   try {
-    const schoolId = req.user.schoolId;
-    const studentCount = await Student.countDocuments({ schoolId });
-    const busCount = await Bus.countDocuments({ schoolId });
-    res.json({ studentCount, busCount });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    const school = await School.findById(req.user.id)
+      .select('-password')
+      .lean();
+
+    if (!school) {
+      return res.status(404).json({ message: 'School not found' });
+    }
+
+    // Get additional dashboard data
+    const studentsCount = await Student.countDocuments({ school: school._id });
+    const busesCount = await Bus.countDocuments({ school: school._id });
+
+    res.json({
+      ...school,
+      stats: {
+        studentsCount,
+        busesCount
+      }
+    });
+  } catch (error) {
+    console.error('Dashboard error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 
@@ -65,11 +112,18 @@ router.put("/edit", protect("school"), async (req, res) => {
 });
 
 // Protected routes for schools
-router.get('/profile', auth, async (req, res) => {
+router.get('/profile', protect("school"), async (req, res) => {
   try {
-    const school = await School.findById(req.user.id).select('-password');
+    const school = await School.findById(req.user.id)
+      .select('-password');
+    
+    if (!school) {
+      return res.status(404).json({ message: 'School not found' });
+    }
+    
     res.json(school);
   } catch (error) {
+    console.error('Profile fetch error:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
