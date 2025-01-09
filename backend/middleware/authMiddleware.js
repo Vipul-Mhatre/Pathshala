@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const School = require('../models/School');
 const Superuser = require('../models/Superuser');
 
-exports.protect = (role) => async (req, res, next) => {
+const protect = (role) => async (req, res, next) => {
   try {
     // Get token from header
     const token = req.header('Authorization')?.replace('Bearer ', '');
