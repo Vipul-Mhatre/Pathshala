@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -14,11 +14,7 @@ const AttendanceTracking = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchAttendanceReport();
-  }, [filters]);
-
-  const fetchAttendanceReport = async () => {
+  const fetchAttendanceReport = useCallback(async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
@@ -40,7 +36,11 @@ const AttendanceTracking = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
+
+  useEffect(() => {
+    fetchAttendanceReport();
+  }, [filters, fetchAttendanceReport]);
 
   const handleExport = () => {
     // Convert attendance data to CSV

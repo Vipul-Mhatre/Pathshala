@@ -11,58 +11,40 @@ const router = express.Router();
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log("Login attempt for:", email);
-
-    // Find school and handle case sensitivity
+    
+    // Find school case-insensitive
     const school = await School.findOne({ 
       email: { $regex: new RegExp(`^${email}$`, 'i') }
     });
 
     if (!school) {
-      console.log("No school found with email:", email);
-      return res.status(401).json({ 
-        message: "Invalid credentials",
-        details: "No school found with this email"
-      });
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const isMatch = await bcrypt.compare(password, school.password);
-    console.log("Password match result:", isMatch);
-
+    // Compare password
+    const isMatch = await school.comparePassword(password);
     if (!isMatch) {
-      return res.status(401).json({ 
-        message: "Invalid credentials",
-        details: "Password does not match"
-      });
+      return res.status(401).json({ message: 'Invalid credentials' });
     }
 
+    // Generate JWT token
     const token = jwt.sign(
-      { 
-        id: school._id, 
-        role: "school",
-        email: school.email,
-        name: school.name
-      },
+      { id: school._id, role: 'school' },
       process.env.JWT_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: '24h' }
     );
 
     res.json({
-      success: true,
       token,
       school: {
         id: school._id,
-        email: school.email,
-        name: school.name
+        name: school.name,
+        email: school.email
       }
     });
-
   } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ 
-      message: "Server error",
-      details: error.message 
-    });
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 

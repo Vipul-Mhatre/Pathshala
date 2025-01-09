@@ -5,24 +5,29 @@ const generateDummyStudents = async (schoolId, count = 50) => {
   const students = [];
   const standards = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th'];
   const divisions = ['A', 'B', 'C'];
-  const statuses = ['At Home', 'In School', 'On Bus'];
+  const genders = ['Male', 'Female'];
 
   for (let i = 0; i < count; i++) {
     const student = {
+      schoolId: schoolId,
+      email: faker.internet.email(),
+      password: 'defaultPassword123', // You should handle this more securely
+      rollNo: faker.number.int({ min: 1, max: 999 }),
       name: faker.person.fullName(),
-      rollNo: faker.number.int({ min: 1, max: 999 }).toString(),
       standard: faker.helpers.arrayElement(standards),
       division: faker.helpers.arrayElement(divisions),
+      gender: faker.helpers.arrayElement(genders),
+      dateOfBirth: faker.date.past({ years: 15 }),
+      fathersName: faker.person.fullName(),
+      fathersContactNumber: faker.phone.number(),
+      mothersName: faker.person.fullName(),
+      mothersContactNumber: faker.phone.number(),
       address: faker.location.streetAddress(),
-      parentName: faker.person.fullName(),
-      parentContact: faker.phone.number(),
-      school: schoolId,
-      status: faker.helpers.arrayElement(statuses),
-      busRoute: faker.helpers.arrayElement(['Route A', 'Route B', 'Route C', null]),
-      attendance: {
-        present: faker.number.int({ min: 0, max: 200 }),
-        absent: faker.number.int({ min: 0, max: 50 })
-      }
+      studentStatus: {
+        status: 'At Home',
+        deviceID: null
+      },
+      attendance: []
     };
     students.push(student);
   }
@@ -30,8 +35,10 @@ const generateDummyStudents = async (schoolId, count = 50) => {
   try {
     await Student.insertMany(students);
     console.log(`${count} dummy students created for school ${schoolId}`);
+    return students;
   } catch (error) {
     console.error('Error creating dummy students:', error);
+    throw error;
   }
 };
 

@@ -1,30 +1,32 @@
-const express = require("express");
-const cors = require("cors");
-const mongoose = require("mongoose");
-require("dotenv").config();
-const validateEnv = require('./config/validateEnv');
-const { createDefaultSuperusers } = require('./models/Superuser');
+const express = require('express');
+const cors = require('cors');
+const connectDB = require('./config/db');
+const superuserRoutes = require('./routes/superuserRoutes');
+const schoolRoutes = require('./routes/schoolRoutes');
+const studentRoutes = require('./routes/studentRoutes');
 
 const app = express();
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/superuser', require('./routes/superuserRoutes'));
-app.use('/api/schools', require('./routes/schoolRoutes'));
-app.use('/api/students', require('./routes/studentRoutes'));
-app.use('/api/buses', require('./routes/busRoutes'));
+// Routes
+app.use('/api/superuser', superuserRoutes);
+app.use('/api/schools', schoolRoutes);
+app.use('/api/students', studentRoutes);
 
-validateEnv();
-createDefaultSuperusers();
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Something went wrong!' });
+});
 
-mongoose.connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log('Connected to MongoDB');
-    app.listen(process.env.PORT, () => {
-      console.log(`Server running on port ${process.env.PORT}`);
-    });
-  })
-  .catch((error) => {
-    console.error('MongoDB connection error:', error);
-  });
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+  connectDB();
+});
+
+module.exports = app;

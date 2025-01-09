@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
@@ -10,12 +10,7 @@ const StudentList = () => {
     division: '',
     search: ''
   });
-
-  useEffect(() => {
-    fetchStudents();
-  }, [filters]);
-
-  const fetchStudents = async () => {
+  const fetchStudents = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const queryParams = new URLSearchParams(filters).toString();
@@ -31,7 +26,11 @@ const StudentList = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
+
+  useEffect(() => {
+    fetchStudents();
+  }, [fetchStudents]);
 
   const handleFilterChange = (e) => {
     setFilters(prev => ({

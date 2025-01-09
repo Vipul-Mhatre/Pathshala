@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import API from '../../api/api';
 
-const Login = ({ setIsAuthenticated, setUserType }) => {
+const Login = ({ setUserType }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
@@ -23,25 +23,33 @@ const Login = ({ setIsAuthenticated, setUserType }) => {
     e.preventDefault();
     setLoading(true);
     setError('');
-
+    
     try {
-      const endpoint = formData.userType === 'superuser' ? '/superuser/login' : '/schools/login';
-      const { data } = await API.post(endpoint, {
-        email: formData.email,
-        password: formData.password
-      });
-
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('userType', formData.userType);
-      if (data.school) {
-        localStorage.setItem('schoolName', data.school.name);
-      }
+      let response;
+      const { email, password, userType } = formData;
       
-      setIsAuthenticated(true);
-      setUserType(formData.userType);
+      // Choose API endpoint based on user type
+      if (userType === 'superuser') {
+        response = await API.post('/superuser/login', { email, password });
+      } else if (userType === 'school') {
+        response = await API.post('/schools/login', { email, password });
+      } else if (userType === 'student') {
+        response = await API.post('/students/login', { email, password });
+      }
+
+      const { token } = response.data;
+      
+      // Store auth data
+      localStorage.setItem('token', token);
+      localStorage.setItem('userType', userType);
+      
+      // Update app state
+      setUserType(userType);
+      
+      // Redirect to dashboard
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.response?.data?.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -69,6 +77,7 @@ const Login = ({ setIsAuthenticated, setUserType }) => {
                 className="appearance-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
               >
                 <option value="school">School</option>
+                <option value="student">Student</option>
                 <option value="superuser">Superuser</option>
               </select>
             </div>

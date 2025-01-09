@@ -1,9 +1,14 @@
 const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
 
 const StudentSchema = new mongoose.Schema({
   schoolId: { type: mongoose.Schema.Types.ObjectId, ref: "School", required: true },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true }, 
+  password: { 
+    type: String, 
+    required: true,
+    select: false // Hide password by default in queries
+  },
   uhfid: { type: String, unique: true },
   rc522id: { type: String, unique: true },
   rollNo: { type: Number, required: true },
@@ -33,6 +38,20 @@ const StudentSchema = new mongoose.Schema({
     },
   ],
   createdAt: { type: Date, default: Date.now },
+});
+
+// Add password comparison method
+StudentSchema.methods.comparePassword = async function(candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
+};
+
+// Hash password before saving
+StudentSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
+  
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  next();
 });
 
 module.exports = mongoose.model("Student", StudentSchema);

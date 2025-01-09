@@ -1,8 +1,8 @@
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import PropTypes from 'prop-types';
 
 const LogoutButton = ({ setUserRole }) => {
-  const navigate = useNavigate();
+//   const navigate = useNavigate();
 
   const handleLogout = () => {
     try {
@@ -12,7 +12,6 @@ const LogoutButton = ({ setUserRole }) => {
         setUserRole(null);
       }
       
-      // Force redirect to login page with full URL
       window.location.href = 'http://localhost:3000/login';
     } catch (error) {
       console.error('Logout error:', error);

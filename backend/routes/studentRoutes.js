@@ -1,6 +1,7 @@
 const express = require("express");
 const { protect } = require("../middleware/authMiddleware");
 const Student = require("../models/Student");
+const jwt = require("jsonwebtoken");
 
 const router = express.Router();
 
@@ -131,6 +132,42 @@ router.get("/attendance-report", protect("school"), async (req, res) => {
     });
 
     res.json(report);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Add login route
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    const student = await Student.findOne({ email }).select('+password');
+    if (!student) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    const isMatch = await student.comparePassword(password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    const token = jwt.sign(
+      { id: student._id, role: 'student' },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
+    res.json({
+      token,
+      student: {
+        id: student._id,
+        name: student.name,
+        email: student.email,
+        standard: student.standard,
+        division: student.division
+      }
+    });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
