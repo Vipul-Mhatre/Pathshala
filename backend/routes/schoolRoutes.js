@@ -8,7 +8,6 @@ const Bus = require("../models/Bus");
 
 const router = express.Router();
 
-// School Login
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -67,7 +66,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// Get School Dashboard Summary
 router.get("/dashboard", protect("school"), async (req, res) => {
   try {
     const school = await School.findById(req.user.id)
@@ -78,7 +76,6 @@ router.get("/dashboard", protect("school"), async (req, res) => {
       return res.status(404).json({ message: 'School not found' });
     }
 
-    // Get additional dashboard data
     const studentsCount = await Student.countDocuments({ school: school._id });
     const busesCount = await Bus.countDocuments({ school: school._id });
 
@@ -95,7 +92,6 @@ router.get("/dashboard", protect("school"), async (req, res) => {
   }
 });
 
-// Edit School Details
 router.put("/edit", protect("school"), async (req, res) => {
   const schoolId = req.user.schoolId;
   const { schoolName, address, contactNumber } = req.body;
@@ -111,7 +107,6 @@ router.put("/edit", protect("school"), async (req, res) => {
   }
 });
 
-// Protected routes for schools
 router.get('/profile', protect("school"), async (req, res) => {
   try {
     const school = await School.findById(req.user.id)
@@ -125,6 +120,18 @@ router.get('/profile', protect("school"), async (req, res) => {
   } catch (error) {
     console.error('Profile fetch error:', error);
     res.status(500).json({ message: 'Server error' });
+  }
+});
+
+router.post("/logout", protect("school"), async (req, res) => {
+  try {
+    res.json({ message: "Successfully logged out" });
+  } catch (error) {
+    console.error("Logout error:", error);
+    res.status(500).json({ 
+      message: "Server error during logout",
+      details: error.message 
+    });
   }
 });
 

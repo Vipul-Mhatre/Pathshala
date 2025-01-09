@@ -7,7 +7,7 @@ const Login = ({ setIsAuthenticated, setUserType }) => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    userType: 'school' // Default to school login
+    userType: 'school' 
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -58,7 +58,6 @@ const Login = ({ setIsAuthenticated, setUserType }) => {
         
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
-            {/* User Type Selection */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Login As
@@ -73,8 +72,6 @@ const Login = ({ setIsAuthenticated, setUserType }) => {
                 <option value="superuser">Superuser</option>
               </select>
             </div>
-
-            {/* Email Field */}
             <div className="mb-4">
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 Email address
@@ -92,7 +89,6 @@ const Login = ({ setIsAuthenticated, setUserType }) => {
               />
             </div>
 
-            {/* Password Field */}
             <div className="mb-4">
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                 Password

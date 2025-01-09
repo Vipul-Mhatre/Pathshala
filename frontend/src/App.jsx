@@ -1,11 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import DashboardLayout from './components/layout/DashboardLayout';
-
-// Auth Components
 import Login from './components/auth/Login';
 
-// School Components
 import SchoolDashboardHome from './components/dashboard/SchoolDashboardHome';
 import StudentList from './components/students/StudentList';
 import AddStudent from './components/students/AddStudent';
@@ -52,28 +49,23 @@ const App = () => {
       }>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<SchoolDashboardHome />} />
-        
-        {/* Student Routes */}
+
         <Route path="students" element={<StudentList />} />
         <Route path="students/add" element={<AddStudent />} />
         <Route path="students/:id" element={<StudentDetails />} />
         <Route path="students/import" element={<BulkStudentImport />} />
-        
-        {/* Bus Routes */}
+
         <Route path="buses" element={<BusList />} />
         <Route path="buses/add" element={<AddBus />} />
         <Route path="buses/tracking" element={<BusTracking />} />
-        
-        {/* Attendance Routes */}
+
         <Route path="attendance" element={<AttendanceTracking />} />
         <Route path="attendance/export" element={<AttendanceExport />} />
-        
-        {/* Profile Routes */}
+
         <Route path="profile" element={<SchoolProfile />} />
         <Route path="change-password" element={<ChangePassword />} />
       </Route>
 
-      {/* Fallback Route */}
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
   );

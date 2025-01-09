@@ -2,20 +2,22 @@ const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
 require("dotenv").config();
+const validateEnv = require('./config/validateEnv');
+const { createDefaultSuperusers } = require('./models/Superuser');
 
 const app = express();
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Routes
 app.use('/api/superuser', require('./routes/superuserRoutes'));
 app.use('/api/schools', require('./routes/schoolRoutes'));
 app.use('/api/students', require('./routes/studentRoutes'));
 app.use('/api/buses', require('./routes/busRoutes'));
 
-// Connect to MongoDB
+validateEnv();
+createDefaultSuperusers();
+
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('Connected to MongoDB');

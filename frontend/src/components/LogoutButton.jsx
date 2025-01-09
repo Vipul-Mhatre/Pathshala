@@ -6,13 +6,14 @@ const LogoutButton = ({ setUserRole }) => {
 
   const handleLogout = () => {
     try {
-      localStorage.removeItem('token');
-      localStorage.removeItem('userRole');
+      localStorage.clear();
       
       if (typeof setUserRole === 'function') {
         setUserRole(null);
       }
-      navigate('/');
+      
+      // Force redirect to login page with full URL
+      window.location.href = 'http://localhost:3000/login';
     } catch (error) {
       console.error('Logout error:', error);
     }
