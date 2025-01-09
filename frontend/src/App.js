@@ -1,20 +1,22 @@
-import React from 'react';
-import { Route, Router } from 'react-router-dom';
-import Login from './components/Login';
-import Dashboard from './components/Dashboard';
-import ManageStudents from './components/ManageStudents';
-import ManageBuses from './components/ManageBuses';
-import AttendanceTracking from './components/AttendanceTracking';
+import React, { useState } from "react";
+import { Routes, Route, Navigate } from "react-router-dom";
+import Login from "./components/Login";
+import Dashboard from "./components/Dashboard";
+import SchoolDashboard from "./components/SchoolDashboard";
 
 const App = () => {
+  const [userRole, setUserRole] = useState(null);
+
   return (
-    <Router>
-      <Route path="/" exact component={Login} />
-      <Route path="/dashboard" component={Dashboard} />
-      <Route path="/manage-students" component={ManageStudents} />
-      <Route path="/manage-buses" component={ManageBuses} />
-      <Route path="/attendance-tracking" component={AttendanceTracking} />
-    </Router>
+    <Routes>
+      <Route path="/" element={<Login setUserRole={setUserRole} />} />
+      <Route
+        path="/dashboard"
+        element={
+          userRole === "superuser" ? <Dashboard /> : userRole === "school" ? <SchoolDashboard /> : <Navigate to="/" />
+        }
+      />
+    </Routes>
   );
 };
 
