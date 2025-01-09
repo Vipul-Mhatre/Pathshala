@@ -1,25 +1,36 @@
-import { useNavigate } from 'react-router-dom';
-import LogoutButton from '../LogoutButton';
+import { Link } from 'react-router-dom';
+import LogoutButton from '../auth/LogoutButton';
 
-const Navbar = () => {
-  const navigate = useNavigate();
-  const schoolName = localStorage.getItem('schoolName');
-
+const Navbar = ({ userType, setUserType }) => {
   return (
-    <nav className="bg-white shadow-md px-6 py-4">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-lg font-semibold">{schoolName}</h2>
-        </div>
+    <nav className="bg-gray-800 text-white p-4">
+      <div className="container mx-auto flex justify-between items-center">
+        <Link to="/" className="text-xl font-bold">School Bus Tracker</Link>
         
         <div className="flex items-center space-x-4">
-          <button
-            onClick={() => navigate('/profile')}
-            className="text-gray-600 hover:text-gray-800"
-          >
-            Settings
-          </button>
-          <LogoutButton />
+          {userType === 'superuser' && (
+            <>
+              <Link to="/schools" className="hover:text-gray-300">Schools</Link>
+            </>
+          )}
+          
+          {userType === 'school' && (
+            <>
+              <Link to="/students" className="hover:text-gray-300">Students</Link>
+              <Link to="/buses" className="hover:text-gray-300">Buses</Link>
+              <Link to="/attendance" className="hover:text-gray-300">Attendance</Link>
+            </>
+          )}
+          
+          {userType === 'student' && (
+            <>
+              <Link to="/attendance" className="hover:text-gray-300">My Attendance</Link>
+              <Link to="/bus-tracking" className="hover:text-gray-300">Bus Location</Link>
+            </>
+          )}
+          
+          <Link to="/profile" className="hover:text-gray-300">Profile</Link>
+          <LogoutButton setUserType={setUserType} />
         </div>
       </div>
     </nav>

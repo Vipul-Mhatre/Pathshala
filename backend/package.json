@@ -21,8 +21,10 @@
     "express": "^4.21.2",
     "express-validator": "^7.2.1",
     "jsonwebtoken": "^9.0.2",
+    "leaflet": "^1.9.4",
     "mongoose": "^8.9.3",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "react-leaflet": "^5.0.0"
   },
   "devDependencies": {
     "@faker-js/faker": "^9.3.0",

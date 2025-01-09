@@ -17,11 +17,11 @@ import AddBus from './components/buses/AddBus';
 import BusTracking from './components/buses/BusTracking';
 import AttendanceTracking from './components/attendance/AttendanceTracking';
 import AttendanceExport from './components/attendance/AttendanceExport';
-import SchoolProfile from './components/profile/SchoolProfile';
-import ChangePassword from './components/profile/ChangePassword';
+import Profile from './components/profile/Profile';
+import Settings from './components/settings/Settings';
+import Reports from './components/reports/Reports';
 import StudentAttendance from './components/attendance/StudentAttendance';
 import StudentBusTracking from './components/buses/StudentBusTracking';
-import StudentProfile from './components/profile/StudentProfile';
 
 const App = () => {
   const [userType, setUserType] = useState(localStorage.getItem('userType'));
@@ -30,16 +30,13 @@ const App = () => {
     <Routes>
       <Route path="/login" element={<Login setUserType={setUserType} />} />
       
-      <Route path="/" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
+      <Route path="/" element={
+        <ProtectedRoute>
+          <DashboardLayout userType={userType} setUserType={setUserType} />
+        </ProtectedRoute>
+      }>
         {/* Default route */}
         <Route index element={
-          userType === 'superuser' ? <SuperuserDashboard /> :
-          userType === 'school' ? <SchoolDashboard /> :
-          <StudentDashboard />
-        } />
-
-        {/* Dashboard route */}
-        <Route path="dashboard" element={
           userType === 'superuser' ? <SuperuserDashboard /> :
           userType === 'school' ? <SchoolDashboard /> :
           <StudentDashboard />
@@ -58,15 +55,13 @@ const App = () => {
           <>
             <Route path="students" element={<StudentList />} />
             <Route path="students/add" element={<AddStudent />} />
-            <Route path="students/:id" element={<StudentDetails />} />
             <Route path="students/import" element={<BulkStudentImport />} />
+            <Route path="students/:id" element={<StudentDetails />} />
             <Route path="buses" element={<BusList />} />
             <Route path="buses/add" element={<AddBus />} />
             <Route path="buses/:id/tracking" element={<BusTracking />} />
             <Route path="attendance" element={<AttendanceTracking />} />
             <Route path="attendance/export" element={<AttendanceExport />} />
-            <Route path="profile" element={<SchoolProfile />} />
-            <Route path="change-password" element={<ChangePassword />} />
           </>
         )}
 
@@ -75,9 +70,13 @@ const App = () => {
           <>
             <Route path="attendance" element={<StudentAttendance />} />
             <Route path="bus-tracking" element={<StudentBusTracking />} />
-            <Route path="profile" element={<StudentProfile />} />
           </>
         )}
+
+        {/* Common routes */}
+        <Route path="profile" element={<Profile />} />
+        <Route path="settings" element={<Settings />} />
+        <Route path="reports" element={<Reports />} />
       </Route>
     </Routes>
   );
