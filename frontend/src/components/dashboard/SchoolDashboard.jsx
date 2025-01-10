@@ -1,83 +1,105 @@
-import React, { useState, useEffect } from 'react';
-import API from '../../api/api';
+import { useState, useEffect } from 'react';
+import { getStudents, getBuses, getAttendanceReport } from '../../api/api';
 
 const SchoolDashboard = () => {
   const [stats, setStats] = useState({
     totalStudents: 0,
-    totalBuses: 0,
     presentToday: 0,
-    absentToday: 0
+    totalBuses: 0,
+    busesInOperation: 0
   });
+  const [recentAttendance, setRecentAttendance] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    const fetchSchoolStats = async () => {
-      try {
-        const response = await API.get('/schools/stats');
-        setStats(response.data);
-        setLoading(false);
-      } catch (err) {
-        setError('Failed to load dashboard statistics');
-        setLoading(false);
-      }
-    };
-
-    fetchSchoolStats();
+    fetchDashboardData();
   }, []);
 
+  const fetchDashboardData = async () => {
+    try {
+      const [studentsRes, busesRes, attendanceRes] = await Promise.all([
+        getStudents(),
+        getBuses(),
+        getAttendanceReport({ date: new Date().toISOString().split('T')[0] })
+      ]);
+
+      const presentCount = attendanceRes.data.filter(a => a.status === 'Present').length;
+      
+      setStats({
+        totalStudents: studentsRes.data.length,
+        presentToday: presentCount,
+        totalBuses: busesRes.data.length,
+        busesInOperation: busesRes.data.filter(b => b.currentLocation).length
+      });
+
+      setRecentAttendance(attendanceRes.data.slice(0, 5));
+    } catch (err) {
+      setError('Failed to fetch dashboard data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
-  if (error) return <div className="text-red-500">{error}</div>;
+  if (error) return <div>Error: {error}</div>;
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">School Dashboard</h1>
       
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-gray-500 text-sm">Total Students</h2>
-          <p className="text-3xl font-bold">{stats.totalStudents}</p>
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-gray-500">Total Students</h3>
+          <p className="text-2xl font-bold">{stats.totalStudents}</p>
         </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-gray-500 text-sm">Total Buses</h2>
-          <p className="text-3xl font-bold">{stats.totalBuses}</p>
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-gray-500">Present Today</h3>
+          <p className="text-2xl font-bold">{stats.presentToday}</p>
         </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-gray-500 text-sm">Present Today</h2>
-          <p className="text-3xl font-bold text-green-600">{stats.presentToday}</p>
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-gray-500">Total Buses</h3>
+          <p className="text-2xl font-bold">{stats.totalBuses}</p>
         </div>
-        
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-gray-500 text-sm">Absent Today</h2>
-          <p className="text-3xl font-bold text-red-600">{stats.absentToday}</p>
+        <div className="bg-white p-4 rounded-lg shadow">
+          <h3 className="text-gray-500">Buses in Operation</h3>
+          <p className="text-2xl font-bold">{stats.busesInOperation}</p>
         </div>
       </div>
 
-      <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Quick Actions */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
-          <div className="space-y-2">
-            <button className="w-full text-left px-4 py-2 hover:bg-gray-50 rounded">
-              Add New Student
-            </button>
-            <button className="w-full text-left px-4 py-2 hover:bg-gray-50 rounded">
-              Mark Attendance
-            </button>
-            <button className="w-full text-left px-4 py-2 hover:bg-gray-50 rounded">
-              View Bus Locations
-            </button>
-          </div>
-        </div>
+      {/* Quick Actions */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <button
+          onClick={() => window.location.href = '/students/manage'}
+          className="p-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+        >
+          Manage Students
+        </button>
+        <button
+          onClick={() => window.location.href = '/buses/manage'}
+          className="p-4 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+        >
+          Manage Buses
+        </button>
+      </div>
 
-        {/* Recent Activity */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-semibold mb-4">Recent Activity</h2>
-          <div className="space-y-2">
-            <p className="text-gray-500">No recent activity to display</p>
-          </div>
+      {/* Recent Attendance */}
+      <div className="bg-white rounded-lg shadow">
+        <div className="p-4 border-b">
+          <h2 className="text-xl font-semibold">Recent Attendance</h2>
+        </div>
+        <div className="p-4">
+          {recentAttendance.map((record) => (
+            <div key={record._id} className="flex justify-between items-center py-2">
+              <span>{record.studentName}</span>
+              <span className={`px-2 py-1 rounded ${
+                record.status === 'Present' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+              }`}>
+                {record.status}
+              </span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
