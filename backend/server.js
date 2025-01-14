@@ -13,6 +13,7 @@ const busRoutes = require('./routes/busRoutes');
 // Load environment variables
 require('dotenv').config();
 validateEnv();
+connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5000;

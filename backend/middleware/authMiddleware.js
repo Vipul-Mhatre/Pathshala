@@ -14,19 +14,16 @@ const protect = (role) => async (req, res, next) => {
     // Verify token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    if (decoded.role !== role) {
-      return res.status(403).json({ message: 'Not authorized for this role' });
-    }
-
-    if (role === 'school') {
-      const school = await School.findById(decoded.id).select('-password');
-      if (!school) {
-        return res.status(401).json({ message: 'School not found' });
-      }
-      req.school = school;
-    }
-
     req.user = decoded;
+
+    if (role === 'superuser') {
+      const superuser = await Superuser.findById(decoded.id);
+      if (!superuser) return res.status(403).json({ message: 'Not authorized for this role' });
+    } else if (role === 'school') {
+      const school = await School.findById(decoded.id);
+      if (!school) return res.status(403).json({ message: 'Not authorized for this role' });
+    }
+
     next();
   } catch (err) {
     res.status(401).json({ message: 'Token is not valid' });
