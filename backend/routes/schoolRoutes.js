@@ -117,4 +117,16 @@ router.post("/logout", protect("school"), async (req, res) => {
   }
 });
 
+// Get all schools
+router.get("/", protect("superuser"), async (req, res) => {
+  try {
+    const schools = await School.find();
+    res.json(schools);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Add more routes for creating, updating, and deleting schools
+
 module.exports = router;

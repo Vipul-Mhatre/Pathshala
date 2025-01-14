@@ -12,6 +12,8 @@ router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
     
+    console.log('Login attempt:', { email, password });
+    
     // Find superuser by email
     const superuser = await Superuser.findOne({ email });
     if (!superuser) {
