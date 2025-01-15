@@ -1,0 +1,23 @@
+[
+  {
+    "_id": "67875e095a5a282886b2e595",
+    "email": "school1@example.com",
+    "schoolName": "School One",
+    "address": "470 Brown Overpass",
+    "contactNumber": "438-824-2424"
+  },
+  {
+    "_id": "67875e095a5a282886b2e597",
+    "email": "school2@example.com",
+    "schoolName": "School Two",
+    "address": "5537 The Sidings",
+    "contactNumber": "1-647-593-8404 x44148"
+  },
+  {
+    "_id": "67875e095a5a282886b2e599",
+    "email": "school3@example.com",
+    "schoolName": "School Three",
+    "address": "679 Oak Street",
+    "contactNumber": "(896) 639-2896 x4975"
+  }
+]

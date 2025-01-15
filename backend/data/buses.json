@@ -1,0 +1,82 @@
+[
+  {
+    "_id": "67875e095a5a282886b2e59b",
+    "schoolId": "67875e095a5a282886b2e595",
+    "busNumber": "BUS-1",
+    "deviceID": "DEVICE-IQ7JM4",
+    "driverName": "Jean Kozey V",
+    "driverContactNumber": "(399) 926-4404 x55798"
+  },
+  {
+    "_id": "67875e095a5a282886b2e59d",
+    "schoolId": "67875e095a5a282886b2e597",
+    "busNumber": "BUS-2",
+    "deviceID": "DEVICE-UPOc1f",
+    "driverName": "Rhonda Keebler",
+    "driverContactNumber": "1-561-220-7755 x741"
+  },
+  {
+    "_id": "67875e095a5a282886b2e59f",
+    "schoolId": "67875e095a5a282886b2e599",
+    "busNumber": "BUS-3",
+    "deviceID": "DEVICE-TRyzaC",
+    "driverName": "Neal Gerhold",
+    "driverContactNumber": "(824) 880-8941 x387"
+  },
+  {
+    "_id": "67875e095a5a282886b2e5a1",
+    "schoolId": "67875e095a5a282886b2e595",
+    "busNumber": "BUS-4",
+    "deviceID": "DEVICE-cMOaQy",
+    "driverName": "Irene Hammes",
+    "driverContactNumber": "1-565-312-4170 x214"
+  },
+  {
+    "_id": "67875e0a5a5a282886b2e5a3",
+    "schoolId": "67875e095a5a282886b2e597",
+    "busNumber": "BUS-5",
+    "deviceID": "DEVICE-V0BJkD",
+    "driverName": "Pat Gleichner II",
+    "driverContactNumber": "206-409-5435 x63027"
+  },
+  {
+    "_id": "67875e0a5a5a282886b2e5a5",
+    "schoolId": "67875e095a5a282886b2e595",
+    "busNumber": "BUS-6",
+    "deviceID": "DEVICE-j24HuW",
+    "driverName": "Rosie Huel",
+    "driverContactNumber": "(460) 759-0403 x056"
+  },
+  {
+    "_id": "67875e0a5a5a282886b2e5a7",
+    "schoolId": "67875e095a5a282886b2e599",
+    "busNumber": "BUS-7",
+    "deviceID": "DEVICE-xbcNN3",
+    "driverName": "Jodi Wisoky",
+    "driverContactNumber": "(494) 952-6807 x91714"
+  },
+  {
+    "_id": "67875e0a5a5a282886b2e5a9",
+    "schoolId": "67875e095a5a282886b2e595",
+    "busNumber": "BUS-8",
+    "deviceID": "DEVICE-cSCfBR",
+    "driverName": "Dr. Sylvester Cummings",
+    "driverContactNumber": "209-226-2488 x5629"
+  },
+  {
+    "_id": "67875e0a5a5a282886b2e5ab",
+    "schoolId": "67875e095a5a282886b2e597",
+    "busNumber": "BUS-9",
+    "deviceID": "DEVICE-woDtXK",
+    "driverName": "Timothy Stamm",
+    "driverContactNumber": "636.719.7625 x15020"
+  },
+  {
+    "_id": "67875e0a5a5a282886b2e5ad",
+    "schoolId": "67875e095a5a282886b2e595",
+    "busNumber": "BUS-10",
+    "deviceID": "DEVICE-g5yspg",
+    "driverName": "Julian Considine",
+    "driverContactNumber": "335.757.1939 x7466"
+  }
+]

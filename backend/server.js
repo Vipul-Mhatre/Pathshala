@@ -1,47 +1,32 @@
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const connectDB = require('./config/db');
+const validateEnv = require('./config/validateEnv');
 const errorHandler = require('./middleware/errorMiddleware');
+const ensureSuperuser = require('./config/ensureSuperuser');
 
-// Load environment variables
-dotenv.config();
+const studentRoutes = require('./routes/studentRoutes');
+const schoolRoutes = require('./routes/schoolRoutes');
+const busRoutes = require('./routes/busRoutes');
+const attendanceRoutes = require('./routes/attendanceRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 
-// Middleware
+validateEnv();
+
+connectDB().then(() => {
+  ensureSuperuser();
+});
+
 app.use(cors());
 app.use(express.json());
-
-// Routes
-const authRoutes = require('./routes/authRoutes');
-const schoolRoutes = require('./routes/schoolRoutes');
-const studentRoutes = require('./routes/studentRoutes');
-const busRoutes = require('./routes/busRoutes');
-const superuserRoutes = require('./routes/superuserRoutes');
-
 app.use('/api/auth', authRoutes);
-app.use('/api/superuser', superuserRoutes);
-app.use('/api/school', schoolRoutes);
 app.use('/api/students', studentRoutes);
+app.use('/api/schools', schoolRoutes);
 app.use('/api/buses', busRoutes);
-
-// Error handling middleware
+app.use('/api/attendance', attendanceRoutes);
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
-
-// Initialize database and start server
-const startServer = async () => {
-  try {
-    await connectDB();
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
-  } catch (error) {
-    console.error('Failed to start server:', error.message);
-    process.exit(1);
-  }
-};
-
-startServer();
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

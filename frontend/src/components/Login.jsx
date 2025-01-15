@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../utils/axiosConfig';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -31,29 +31,39 @@ const Login = () => {
       // Choose the correct endpoint based on user type
       switch (userType) {
         case 'superuser':
-          endpoint = '/api/auth/superuser/login';
+          endpoint = '/auth/superuser/login';
           break;
         case 'school':
-          endpoint = '/api/auth/school/login';
+          endpoint = '/auth/school/login';
           break;
         case 'student':
-          endpoint = '/api/students/login';
+          endpoint = '/auth/student/login';
           break;
         default:
           throw new Error('Invalid user type');
       }
 
-      const response = await axios.post(`http://localhost:5000${endpoint}`, {
-        email,
-        password
-      });
+      const response = await axios.post(endpoint, { email, password });
 
+      // Store token and user type
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('userType', userType);
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
-    } finally {
+
+      // Redirect based on user type
+      switch (userType) {
+        case 'superuser':
+          navigate('/superuser-dashboard');
+          break;
+        case 'school':
+          navigate('/dashboard');
+          break;
+        case 'student':
+          navigate('/student-dashboard');
+          break;
+      }
+    } catch (error) {
+      console.error('Login error:', error);
+      setError(error.response?.data?.message || 'Login failed');
       setLoading(false);
     }
   };

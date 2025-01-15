@@ -1,9 +1,12 @@
 const express = require('express');
-const { addStudent } = require('../controllers/studentController');
+const { getStudents, getAllStudents } = require('../controllers/studentController');
 const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
 
-router.post('/', authMiddleware, addStudent);
-// Add more routes for update, delete, attendance tracking, etc.
+// Route to get students for a specific school
+router.get('/', authMiddleware, getStudents);
+
+// Route to get all students (optional, for admin or superuser)
+router.get('/all', authMiddleware, getAllStudents);
 
 module.exports = router;
