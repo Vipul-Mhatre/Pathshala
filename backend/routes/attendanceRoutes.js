@@ -9,7 +9,7 @@ const authMiddleware = require('../middleware/authMiddleware');
 router.use(authMiddleware);
 
 // Check attendance for a specific class and date
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', async (req, res) => {
   try {
     const { class: className, date } = req.query;
     const schoolId = req.user.id; // From auth middleware
@@ -133,7 +133,7 @@ router.post('/', async (req, res) => {
 });
 
 // Get attendance history for a class
-router.get('/history', authMiddleware, async (req, res) => {
+router.get('/history', async (req, res) => {
   try {
     const { class: className, startDate, endDate } = req.query;
     const schoolId = req.user.id;

@@ -73,7 +73,21 @@ const SuperuserDashboard = () => {
 
   const handleAddSchool = async (e) => {
     e.preventDefault();
+    setError('');
     try {
+      // Validate inputs
+      if (!newSchool.email || !newSchool.password || !newSchool.schoolName || 
+          !newSchool.address || !newSchool.contactNumber) {
+        setError('All fields are required');
+        return;
+      }
+
+      // Password validation
+      if (newSchool.password.length < 6) {
+        setError('Password must be at least 6 characters');
+        return;
+      }
+
       const response = await axios.post('/schools', newSchool);
       setSchools([...schools, response.data.school]);
       setIsAddingSchool(false);
@@ -86,7 +100,11 @@ const SuperuserDashboard = () => {
       });
     } catch (error) {
       console.error('Error adding school:', error);
-      setError(error.response?.data?.message || 'Failed to add school');
+      setError(
+        error.response?.data?.message || 
+        error.response?.data?.errors?.[0]?.msg || 
+        'Failed to add school'
+      );
     }
   };
 

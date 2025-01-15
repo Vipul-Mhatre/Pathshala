@@ -1,12 +1,46 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const schoolSchema = new mongoose.Schema({
-  email: { type: String, unique: true },
-  password: String,
-  schoolName: String,
-  address: String,
-  contactNumber: String,
-  createdAt: { type: Date, default: Date.now },
+  schoolName: {
+    type: String,
+    required: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  address: {
+    type: String,
+    required: true
+  },
+  contactNumber: {
+    type: String,
+    required: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+// Hash password before saving
+schoolSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) {
+    return next();
+  }
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
 });
 
 module.exports = mongoose.model('School', schoolSchema);

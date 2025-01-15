@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 const studentSchema = new mongoose.Schema({
   schoolId: { type: mongoose.Schema.Types.ObjectId, ref: 'School' },
-  email: { type: String , unique: true },
+  email: { type: String, unique: true },
   password: String,
   uhfid: String,
   rc522id: String,

@@ -27,22 +27,31 @@ const handleValidationErrors = (req, res, next) => {
   next();
 };
 
+// Check if user is superuser
+const checkSuperuser = (req, res, next) => {
+  if (req.user.userType !== 'superuser') {
+    return res.status(403).json({ message: 'Access denied. Superuser only.' });
+  }
+  next();
+};
+
 // Get all schools (for superuser)
-router.get('/', authMiddleware, getSchools);
+router.get('/', authMiddleware, checkSuperuser, getSchools);
 
 // Create a new school (for superuser)
 router.post(
   '/', 
   authMiddleware, 
+  checkSuperuser,
   validateSchoolCreation,
   handleValidationErrors,
   createSchool
 );
 
 // Update a school
-router.put('/:id', authMiddleware, updateSchool);
+router.put('/:id', authMiddleware, checkSuperuser, updateSchool);
 
 // Delete a school
-router.delete('/:id', authMiddleware, deleteSchool);
+router.delete('/:id', authMiddleware, checkSuperuser, deleteSchool);
 
 module.exports = router;

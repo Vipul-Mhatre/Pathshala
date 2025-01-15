@@ -1,5 +1,6 @@
 const School = require('../models/School');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 // Get all schools
 exports.getSchools = async (req, res) => {
@@ -124,5 +125,53 @@ exports.createSchool = async (req, res) => {
   } catch (error) {
     console.error('Error creating school:', error);
     res.status(500).json({ message: 'Error creating school', error: error.message });
+  }
+};
+
+// School Login
+exports.schoolLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    console.log('Login attempt for:', email); // Debug log
+
+    // Find school
+    const school = await School.findOne({ email });
+    if (!school) {
+      console.log('School not found:', email); // Debug log
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Check password
+    const isMatch = await bcrypt.compare(password, school.password);
+    if (!isMatch) {
+      console.log('Invalid password for:', email); // Debug log
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Generate token
+    const token = jwt.sign(
+      { 
+        id: school._id, 
+        email: school.email,
+        userType: 'school'
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
+    console.log('Login successful for:', email); // Debug log
+
+    res.json({
+      token,
+      user: {
+        id: school._id,
+        email: school.email,
+        schoolName: school.schoolName,
+        userType: 'school'
+      }
+    });
+  } catch (error) {
+    console.error('School login error:', error);
+    res.status(500).json({ message: 'Server error during login' });
   }
 };

@@ -7,7 +7,7 @@ const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    userType: 'superuser' // Default to superuser, can be 'school' or 'student'
+    userType: 'superuser' 
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -45,9 +45,13 @@ const Login = () => {
 
       const response = await axios.post(endpoint, { email, password });
 
-      // Store token and user type
+      // Store token and user info
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('userType', userType);
+      localStorage.setItem('userEmail', response.data.user.email);
+      if (response.data.user.schoolName) {
+        localStorage.setItem('schoolName', response.data.user.schoolName);
+      }
 
       // Redirect based on user type
       switch (userType) {
@@ -64,6 +68,7 @@ const Login = () => {
     } catch (error) {
       console.error('Login error:', error);
       setError(error.response?.data?.message || 'Login failed');
+    } finally {
       setLoading(false);
     }
   };
