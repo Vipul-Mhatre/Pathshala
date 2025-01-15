@@ -1,20 +1,22 @@
 import React from 'react';
-import { Route, Router } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import ManageStudents from './components/ManageStudents';
 import ManageBuses from './components/ManageBuses';
 import AttendanceTracking from './components/AttendanceTracking';
+import ProtectedRoute from './components/auth/ProtectedRoute';
 
 const App = () => {
   return (
-    <Router>
-      <Route path="/" exact component={Login} />
-      <Route path="/dashboard" component={Dashboard} />
-      <Route path="/manage-students" component={ManageStudents} />
-      <Route path="/manage-buses" component={ManageBuses} />
-      <Route path="/attendance-tracking" component={AttendanceTracking} />
-    </Router>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/manage-students" element={<ProtectedRoute><ManageStudents /></ProtectedRoute>} />
+      <Route path="/manage-buses" element={<ProtectedRoute><ManageBuses /></ProtectedRoute>} />
+      <Route path="/attendance-tracking" element={<ProtectedRoute><AttendanceTracking /></ProtectedRoute>} />
+    </Routes>
   );
 };
 
