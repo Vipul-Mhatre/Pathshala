@@ -1,5 +1,49 @@
 const Student = require('../models/Student');
-const authMiddleware = require('../middleware/authMiddleware');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+
+// Student Login
+exports.studentLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find student
+    const student = await Student.findOne({ email });
+    if (!student) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Check password
+    const isMatch = await bcrypt.compare(password, student.password);
+    if (!isMatch) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Generate token
+    const token = jwt.sign(
+      { 
+        id: student._id, 
+        email: student.email,
+        userType: 'student'
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
+    res.json({ 
+      token, 
+      user: { 
+        id: student._id, 
+        email: student.email,
+        name: student.name,
+        userType: 'student'
+      } 
+    });
+  } catch (error) {
+    console.error('Student login error:', error);
+    res.status(500).json({ message: 'Server error during login' });
+  }
+};
 
 // Get all students for a school
 exports.getStudents = async (req, res) => {

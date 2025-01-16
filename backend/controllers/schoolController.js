@@ -132,19 +132,19 @@ exports.createSchool = async (req, res) => {
 exports.schoolLogin = async (req, res) => {
   try {
     const { email, password } = req.body;
-    console.log('Login attempt for:', email); // Debug log
+    console.log('Login attempt for:', email);
 
     // Find school
     const school = await School.findOne({ email });
     if (!school) {
-      console.log('School not found:', email); // Debug log
+      console.log('School not found:', email);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
     // Check password
     const isMatch = await bcrypt.compare(password, school.password);
     if (!isMatch) {
-      console.log('Invalid password for:', email); // Debug log
+      console.log('Invalid password for:', email);
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
@@ -159,7 +159,7 @@ exports.schoolLogin = async (req, res) => {
       { expiresIn: '1d' }
     );
 
-    console.log('Login successful for:', email); // Debug log
+    console.log('Login successful for:', email);
 
     res.json({
       token,

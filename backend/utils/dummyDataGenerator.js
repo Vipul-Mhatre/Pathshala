@@ -84,32 +84,36 @@ class DummyDataGenerator {
 
   static async generateStudents(schools) {
     const students = [];
-    for (let i = 1; i <= 300; i++) {
-      const school = schools[Math.floor(Math.random() * schools.length)];
-      const student = new Student({
-        schoolId: school._id,
-        email: faker.internet.email(),
-        password: await bcrypt.hash('studentpassword', 10),
-        uhfid: faker.string.alphanumeric(8),
-        rc522id: faker.string.alphanumeric(8),
-        rollNo: faker.number.int({ min: 1, max: 500 }),
-        standard: faker.helpers.arrayElement(STANDARDS),
-        division: faker.helpers.arrayElement(DIVISIONS),
-        name: faker.person.fullName(),
-        age: faker.number.int({ min: 5, max: 18 }),
-        gender: faker.helpers.arrayElement(GENDERS),
-        dateOfBirth: faker.date.past({ min: 5, max: 18 }),
-        bloodGroup: faker.helpers.arrayElement(['A+', 'B+', 'O+', 'AB+', 'A-', 'B-', 'O-', 'AB-']),
-        fathersName: faker.person.fullName('male'),
-        fathersContactNumber: faker.phone.number(),
-        mothersName: faker.person.fullName('female'),
-        mothersContactNumber: faker.phone.number(),
-        guardianName: faker.person.fullName(),
-        guardianContactNumber: faker.phone.number(),
-        address: faker.location.streetAddress()
-      });
-      await student.save();
-      students.push(student);
+    for (const standard of STANDARDS) {
+      for (const division of DIVISIONS) {
+        for (let i = 1; i <= 5; i++) { // 5 students per division
+          const school = schools[Math.floor(Math.random() * schools.length)];
+          const student = new Student({
+            schoolId: school._id,
+            email: faker.internet.email(),
+            password: await bcrypt.hash('studentpassword', 10),
+            uhfid: faker.string.alphanumeric(8),
+            rc522id: faker.string.alphanumeric(8),
+            rollNo: faker.number.int({ min: 1, max: 500 }),
+            standard: standard,
+            division: division,
+            name: faker.person.fullName(),
+            age: faker.number.int({ min: 5, max: 18 }),
+            gender: faker.helpers.arrayElement(GENDERS),
+            dateOfBirth: faker.date.past({ years: 18 }),
+            bloodGroup: faker.helpers.arrayElement(['A+', 'B+', 'O+', 'AB+', 'A-', 'B-', 'O-', 'AB-']),
+            fathersName: faker.person.fullName('male'),
+            fathersContactNumber: faker.phone.number(),
+            mothersName: faker.person.fullName('female'),
+            mothersContactNumber: faker.phone.number(),
+            guardianName: faker.person.fullName(),
+            guardianContactNumber: faker.phone.number(),
+            address: faker.location.streetAddress()
+          });
+          await student.save();
+          students.push(student);
+        }
+      }
     }
     return students;
   }
@@ -157,12 +161,10 @@ class DummyDataGenerator {
         throw new Error('MONGODB_URI is not defined in environment variables');
       }
 
-      // Connect to MongoDB with more detailed options
+      // Connect to MongoDB
       await mongoose.connect(process.env.MONGODB_URI, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
-        serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
-        socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
       });
 
       console.log('MongoDB connection successful');
@@ -188,17 +190,6 @@ class DummyDataGenerator {
       mongoose.connection.close();
     } catch (error) {
       console.error('Detailed Error seeding database:', error);
-      console.error('Error Name:', error.name);
-      console.error('Error Message:', error.message);
-      console.error('Error Stack:', error.stack);
-      
-      // Attempt to close mongoose connection
-      try {
-        await mongoose.connection.close();
-      } catch (closeError) {
-        console.error('Error closing mongoose connection:', closeError);
-      }
-      
       process.exit(1);
     }
   }
