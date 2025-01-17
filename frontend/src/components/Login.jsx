@@ -7,7 +7,7 @@ const Login = () => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    userType: 'superuser' 
+    userType: 'school' 
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -42,6 +42,7 @@ const Login = () => {
         default:
           throw new Error('Invalid user type');
       }
+console.log(email,password,endpoint);
 
       const response = await axios.post(endpoint, { email, password });
 

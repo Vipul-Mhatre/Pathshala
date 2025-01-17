@@ -35,6 +35,8 @@ const SuperuserDashboard = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('userType');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('schoolName');
     navigate('/login');
   };
 

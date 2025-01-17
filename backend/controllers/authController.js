@@ -4,12 +4,24 @@ const Superuser = require('../models/Superuser');
 const School = require('../models/School');
 
 // Generate JWT token
-const generateToken = (user) => {
+const generatetoken1 = (user) => {
   return jwt.sign(
     { 
       id: user._id, 
       email: user.email, 
-      userType: user.userType || 'superuser' 
+      userType: user.userType || 'superuser'
+    }, 
+    process.env.JWT_SECRET, 
+    { expiresIn: '1d' }
+  );
+};
+
+const generatetoken2 = (user) => {
+  return jwt.sign(
+    { 
+      id: user._id, 
+      email: user.email, 
+      userType: user.userType || 'school'
     }, 
     process.env.JWT_SECRET, 
     { expiresIn: '1d' }
@@ -30,7 +42,7 @@ const superuserLogin = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const token = generateToken(superuser);
+    const token = generatetoken1(superuser);
     res.json({
       token,
       user: {
@@ -47,18 +59,26 @@ const superuserLogin = async (req, res) => {
 
 const schoolLogin = async (req, res) => {
   const { email, password } = req.body;
+  console.log("password from backend",password);
   try {
     const school = await School.findOne({ email });
+    console.log("school from backend",school);
     if (!school) {
+      console.log('School not found');
       return res.status(401).json({ message: 'Invalid credentials' });
+      
     }
+
+    // Debugging: Log the stored hashed password
+    console.log('Stored hashed password:', school.password);
 
     const isMatch = await bcrypt.compare(password, school.password);
     if (!isMatch) {
+      console.log('Password does not match');
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const token = generateToken(school);
+    const token = generatetoken2(school);
     res.json({
       token,
       user: {
