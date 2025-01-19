@@ -1,80 +1,133 @@
 const Bus = require('../models/Bus');
 
+// Get all buses for a school
+exports.getBuses = async (req, res) => {
+  try {
+    const schoolId = req.user.id;
+    const buses = await Bus.find({ schoolId })
+      .sort({ busNumber: 1 });
+    res.json(buses);
+  } catch (error) {
+    console.error('Error fetching buses:', error);
+    res.status(500).json({ message: 'Error fetching buses' });
+  }
+};
+
 // Add a new bus
 exports.addBus = async (req, res) => {
-    const { schoolId, busNumber, deviceID, driverName, driverContactNumber } = req.body;
-    try {
-        const newBus = new Bus({
-            schoolId,
-            busNumber,
-            deviceID,
-            driverName,
-            driverContactNumber,
-        });
-        await newBus.save();
-        res.status(201).json({ message: 'Bus added successfully' });
-    } catch (error) {
-        res.status(500).json({ message: 'Error adding bus', error });
+  try {
+    const schoolId = req.user.id;
+    const busData = { ...req.body, schoolId };
+
+    // Check if bus number already exists for this school
+    const existingBus = await Bus.findOne({ 
+      schoolId, 
+      busNumber: busData.busNumber 
+    });
+
+    if (existingBus) {
+      return res.status(400).json({ 
+        message: 'Bus number already exists for this school' 
+      });
     }
+
+    // Check if device ID is unique
+    const existingDevice = await Bus.findOne({ 
+      deviceID: busData.deviceID 
+    });
+
+    if (existingDevice) {
+      return res.status(400).json({ 
+        message: 'Device ID already exists' 
+      });
+    }
+
+    const bus = new Bus(busData);
+    await bus.save();
+
+    res.status(201).json({
+      message: 'Bus added successfully',
+      bus
+    });
+  } catch (error) {
+    console.error('Error adding bus:', error);
+    res.status(500).json({ message: 'Error adding bus' });
+  }
 };
 
-// Get all buses
-exports.getAllBuses = async (req, res) => {
-    try {
-        const buses = await Bus.find();
-        res.status(200).json(buses);
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching buses', error });
-    }
-};
-
-// Get a bus by ID
-exports.getBusById = async (req, res) => {
-    const { id } = req.params;
-    try {
-        const bus = await Bus.findById(id);
-        if (!bus) {
-            return res.status(404).json({ message: 'Bus not found' });
-        }
-        res.status(200).json(bus);
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching bus', error });
-    }
-};
-
-// Update a bus by ID
+// Update bus details
 exports.updateBus = async (req, res) => {
+  try {
     const { id } = req.params;
-    const { schoolId, busNumber, deviceID, driverName, driverContactNumber } = req.body;
-    try {
-        const updatedBus = await Bus.findByIdAndUpdate(id, {
-            schoolId,
-            busNumber,
-            deviceID,
-            driverName,
-            driverContactNumber,
-        }, { new: true });
+    const schoolId = req.user.id;
+    const updates = req.body;
 
-        if (!updatedBus) {
-            return res.status(404).json({ message: 'Bus not found' });
-        }
+    const bus = await Bus.findOneAndUpdate(
+      { _id: id, schoolId },
+      updates,
+      { new: true }
+    );
 
-        res.status(200).json({ message: 'Bus updated successfully', updatedBus });
-    } catch (error) {
-        res.status(500).json({ message: 'Error updating bus', error });
+    if (!bus) {
+      return res.status(404).json({ message: 'Bus not found' });
     }
+
+    res.json({
+      message: 'Bus updated successfully',
+      bus
+    });
+  } catch (error) {
+    console.error('Error updating bus:', error);
+    res.status(500).json({ message: 'Error updating bus' });
+  }
 };
 
-// Delete a bus by ID
+// Delete a bus
 exports.deleteBus = async (req, res) => {
+  try {
     const { id } = req.params;
-    try {
-        const bus = await Bus.findByIdAndDelete(id);
-        if (!bus) {
-            return res.status(404).json({ message: 'Bus not found' });
-        }
-        res.status(200).json({ message: 'Bus deleted successfully' });
-    } catch (error) {
-        res.status(500).json({ message: 'Error deleting bus', error });
+    const schoolId = req.user.id;
+
+    const bus = await Bus.findOneAndDelete({ _id: id, schoolId });
+
+    if (!bus) {
+      return res.status(404).json({ message: 'Bus not found' });
     }
+
+    res.json({ message: 'Bus deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting bus:', error);
+    res.status(500).json({ message: 'Error deleting bus' });
+  }
+};
+
+// Update bus location
+exports.updateLocation = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { lat, lon } = req.body;
+    const schoolId = req.user.id;
+
+    const bus = await Bus.findOneAndUpdate(
+      { _id: id, schoolId },
+      { 
+        'currentLocation.lat': lat,
+        'currentLocation.lon': lon,
+        'currentLocation.lastUpdated': Date.now()
+      },
+      { new: true }
+    );
+
+    if (!bus) {
+      return res.status(404).json({ message: 'Bus not found' });
+    }
+
+    res.json({
+      message: 'Location updated successfully',
+      bus
+    });
+  } catch (error) {
+    console.error('Error updating location:', error);
+    res.status(500).json({ message: 'Error updating location' });
+  }
 };

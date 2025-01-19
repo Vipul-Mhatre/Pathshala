@@ -30,6 +30,18 @@ const SchoolNavbar = () => {
           >
             Mark Attendance
           </Link>
+          <Link 
+            to="/manage-buses" 
+            className={`px-3 py-2 rounded-md transition-colors ${isActive('/manage-buses')}`}
+          >
+            Manage Buses
+          </Link>
+          <Link 
+            to="/bus-tracking" 
+            className={`px-3 py-2 rounded-md transition-colors ${isActive('/bus-tracking')}`}
+          >
+            Track Buses
+          </Link>
         </div>
         <button 
           onClick={() => {
