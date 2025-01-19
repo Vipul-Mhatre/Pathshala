@@ -323,4 +323,73 @@ router.get('/weekly', async (req, res) => {
   }
 });
 
+// Add new route for CSV export
+router.get('/export', async (req, res) => {
+  try {
+    const { startDate, endDate, standard, division } = req.query;
+    const schoolId = req.user.id;
+
+    // Validate required parameters
+    if (!startDate || !endDate || !standard) {
+      return res.status(400).json({ message: 'Start date, end date and standard are required' });
+    }
+
+    // Get all students in the class
+    const students = await Student.find({
+      schoolId,
+      standard,
+      ...(division && { division })
+    }).sort({ division: 1, rollNo: 1 });
+
+    // Get attendance records for the date range
+    const attendanceRecords = await Attendance.find({
+      schoolId,
+      standard,
+      ...(division && { division }),
+      date: {
+        $gte: new Date(startDate),
+        $lte: new Date(endDate)
+      }
+    }).populate('studentId', 'name rollNo division');
+
+    // Create CSV content with report header
+    let csvContent = '';
+    csvContent += `Attendance Report\n`;
+    csvContent += `Standard: ${standard}\n`;
+    csvContent += `Division: ${division || 'All'}\n`;
+    csvContent += `Period: ${startDate} to ${endDate}\n`;
+    csvContent += '\n'; // Empty line for separation
+    
+    // Add data header
+    csvContent += 'Roll No,Name,Division,Date,Status\n';
+
+    // Add records to CSV
+    attendanceRecords.forEach(record => {
+      if (record.studentId) { // Check if student exists
+        csvContent += `${record.studentId.rollNo},${record.studentId.name},${record.studentId.division},${record.date.toISOString().split('T')[0]},${record.status}\n`;
+      }
+    });
+
+    // Add summary at the bottom
+    const presentCount = attendanceRecords.filter(r => r.status === 'Present').length;
+    const totalRecords = attendanceRecords.length;
+    csvContent += '\nSummary\n';
+    csvContent += `Total Students: ${students.length}\n`;
+    csvContent += `Total Present: ${presentCount}\n`;
+    csvContent += `Total Absent: ${totalRecords - presentCount}\n`;
+    csvContent += `Attendance Rate: ${((presentCount / totalRecords) * 100).toFixed(2)}%\n`;
+
+    // Set headers for CSV download
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=attendance_${standard}_${division || 'all'}_${startDate}_to_${endDate}.csv`);
+
+    // Send CSV
+    res.send(csvContent);
+
+  } catch (error) {
+    console.error('Error exporting attendance:', error);
+    res.status(500).json({ message: 'Error exporting attendance data' });
+  }
+});
+
 module.exports = router; 

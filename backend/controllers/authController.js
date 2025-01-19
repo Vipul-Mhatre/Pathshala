@@ -59,7 +59,7 @@ const superuserLogin = async (req, res) => {
 
 const schoolLogin = async (req, res) => {
   const { email, password } = req.body;
-  console.log("password from backend",password);
+  // console.log("password from backend",password);
   try {
     const school = await School.findOne({ email });
     console.log("school from backend",school);
@@ -69,8 +69,8 @@ const schoolLogin = async (req, res) => {
       
     }
 
-    // Debugging: Log the stored hashed password
-    console.log('Stored hashed password:', school.password);
+    // Debugging Log the stored hashed password
+    // console.log('Stored hashed password:', school.password);
 
     const isMatch = await bcrypt.compare(password, school.password);
     if (!isMatch) {

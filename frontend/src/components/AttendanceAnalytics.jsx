@@ -89,6 +89,43 @@ const AttendanceAnalytics = () => {
     });
   };
 
+  const handleExportCSV = async () => {
+    try {
+      // Get the end date (selected date)
+      const endDate = selectedDate;
+      
+      // Calculate start date (7 days before)
+      const startDate = new Date(selectedDate);
+      startDate.setDate(startDate.getDate() - 6);
+      const formattedStartDate = format(startDate, 'yyyy-MM-dd');
+
+      // Make API call to get CSV
+      const response = await axios.get('/attendance/export', {
+        params: {
+          startDate: formattedStartDate,
+          endDate,
+          standard: selectedStandard,
+          division: selectedDivision
+        },
+        responseType: 'blob' // Important for handling file download
+      });
+
+      // Create download link
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `attendance_${selectedStandard}_${selectedDivision}_${formattedStartDate}_to_${endDate}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+
+    } catch (error) {
+      setError('Failed to export attendance data');
+      console.error('Export error:', error);
+    }
+  };
+
   return (
     <div>
       <SchoolNavbar />
@@ -133,6 +170,16 @@ const AttendanceAnalytics = () => {
             </select>
           </div>
         </div>
+
+        {/* Add Export Button */}
+        {selectedStandard && selectedDivision && (
+          <button
+            onClick={handleExportCSV}
+            className="mb-4 bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+          >
+            Export Attendance (CSV)
+          </button>
+        )}
 
         {/* Attendance Marked Alert */}
         {isAttendanceMarked && (
