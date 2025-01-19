@@ -23,6 +23,14 @@ const attendanceSchema = new mongoose.Schema({
     enum: ['Present', 'Absent'],
     required: true
   },
+  standard: {
+    type: String,
+    required: true
+  },
+  division: {
+    type: String,
+    required: true
+  },
   createdAt: {
     type: Date,
     default: Date.now

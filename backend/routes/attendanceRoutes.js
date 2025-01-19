@@ -81,50 +81,61 @@ router.get('/', async (req, res) => {
 // Submit attendance
 router.post('/', async (req, res) => {
   try {
-    const { date, class: className, presentStudents } = req.body;
-    const schoolId = req.user.id; // From auth middleware
+    const { date, standard, division, presentStudents } = req.body;
+    const schoolId = req.user.id;
 
     // Validate inputs
-    if (!className || !date || !Array.isArray(presentStudents)) {
-      return res.status(400).json({ message: 'Invalid input data' });
+    if (!standard || !division || !date || !Array.isArray(presentStudents)) {
+      return res.status(400).json({ 
+        message: 'Invalid input data' 
+      });
     }
 
-    // Find all students in the class
-    const allStudents = await Student.find({ 
-      schoolId, 
-      standard: className 
+    // Get all students in the class
+    const allStudents = await Student.find({
+      schoolId,
+      standard,
+      division
     });
 
-    // Prepare attendance records
+    if (!allStudents.length) {
+      return res.status(404).json({ 
+        message: 'No students found in this class' 
+      });
+    }
+
+    // Delete existing attendance records for this class and date
+    await Attendance.deleteMany({
+      schoolId,
+      date: new Date(date),
+      standard,
+      division
+    });
+
+    // Create attendance records
     const attendanceRecords = allStudents.map(student => ({
       schoolId,
       studentId: student._id,
       date: new Date(date),
-      status: presentStudents.some(p => p.studentId === student._id.toString()) 
-        ? 'Present' 
-        : 'Absent'
+      standard,
+      division,
+      status: presentStudents.includes(student._id.toString()) ? 'Present' : 'Absent'
     }));
-
-    // Remove existing attendance for this date and class
-    await Attendance.deleteMany({ 
-      schoolId, 
-      date: new Date(date),
-      studentId: { $in: allStudents.map(s => s._id) }
-    });
 
     // Insert new attendance records
     await Attendance.insertMany(attendanceRecords);
 
-    res.status(201).json({ 
+    res.status(201).json({
       message: 'Attendance recorded successfully',
       summary: {
         totalStudents: allStudents.length,
-        presentStudents: presentStudents.length,
-        absentStudents: allStudents.length - presentStudents.length
+        presentCount: presentStudents.length,
+        absentCount: allStudents.length - presentStudents.length
       }
     });
+
   } catch (error) {
-    console.error('Attendance submission error:', error);
+    console.error('Error recording attendance:', error);
     res.status(500).json({ 
       message: 'Error recording attendance', 
       error: error.message 
@@ -135,19 +146,19 @@ router.post('/', async (req, res) => {
 // Get attendance history for a class
 router.get('/history', async (req, res) => {
   try {
-    const { class: className, startDate, endDate } = req.query;
+    const { standard, startDate, endDate } = req.query;
     const schoolId = req.user.id;
 
-    // Validate inputs
-    if (!className || !startDate || !endDate) {
-      return res.status(400).json({ message: 'Class, start date, and end date are required' });
+    if (!standard || !startDate || !endDate) {
+      return res.status(400).json({ 
+        message: 'Standard, start date, and end date are required' 
+      });
     }
 
-    // Find attendance records within date range
     const attendanceRecords = await Attendance.aggregate([
       {
         $match: {
-          schoolId: mongoose.Types.ObjectId(schoolId),
+          schoolId: new mongoose.Types.ObjectId(schoolId),
           date: {
             $gte: new Date(startDate),
             $lte: new Date(endDate)
@@ -167,39 +178,148 @@ router.get('/history', async (req, res) => {
       },
       {
         $match: {
-          'studentDetails.standard': className
+          'studentDetails.standard': standard
         }
       },
       {
         $group: {
-          _id: '$date',
-          totalStudents: { $sum: 1 },
-          presentStudents: { 
-            $sum: { $cond: [{ $eq: ['$status', 'Present'] }, 1, 0] } 
+          _id: { 
+            date: '$date',
+            division: '$studentDetails.division'
           },
-          presentStudentNames: { 
-            $push: { 
-              $cond: [
-                { $eq: ['$status', 'Present'] }, 
-                '$studentDetails.name', 
-                '$$REMOVE'
-              ] 
-            }
+          totalStudents: { $sum: 1 },
+          presentCount: {
+            $sum: { $cond: [{ $eq: ['$status', 'Present'] }, 1, 0] }
           }
         }
       },
       {
-        $sort: { _id: 1 }
+        $sort: { '_id.date': 1, '_id.division': 1 }
       }
     ]);
 
     res.json(attendanceRecords);
   } catch (error) {
-    console.error('Attendance history error:', error);
-    res.status(500).json({ 
-      message: 'Error fetching attendance history', 
-      error: error.message 
+    console.error('Error fetching attendance history:', error);
+    res.status(500).json({ message: 'Error fetching attendance history' });
+  }
+});
+
+// Get attendance analytics
+router.get('/analytics', async (req, res) => {
+  try {
+    const { date, standard, division } = req.query;
+    const schoolId = req.user.id;
+
+    // Get all students in the class for this school
+    const allStudents = await Student.find({ 
+      schoolId,
+      standard, 
+      division 
     });
+    
+    // Get attendance records for the date and school
+    const attendanceRecords = await Attendance.find({
+      schoolId,
+      date: new Date(date),
+      standard,
+      division
+    });
+
+    // Get present students (explicitly marked present)
+    const presentStudents = [];
+    const absentStudents = [];
+
+    // Sort students into present and absent
+    for (const student of allStudents) {
+      const record = attendanceRecords.find(
+        record => record.studentId.toString() === student._id.toString()
+      );
+      
+      // Check for both "Present" and "present" due to case sensitivity
+      if (record && (record.status === 'Present' || record.status === 'present')) {
+        presentStudents.push(student);
+      } else {
+        absentStudents.push(student);
+      }
+    }
+
+    const totalStudents = allStudents.length;
+    const presentCount = presentStudents.length;
+    const absentCount = totalStudents - presentCount;
+
+    res.json({
+      isAttendanceMarked: attendanceRecords.length > 0,
+      totalStudents,
+      presentCount,
+      absentCount,
+      attendanceRate: ((presentCount / totalStudents) * 100).toFixed(2),
+      presentStudents,
+      absentStudents
+    });
+
+  } catch (error) {
+    console.error('Error fetching attendance analytics:', error);
+    res.status(500).json({ message: 'Error fetching attendance analytics' });
+  }
+});
+
+// Add this new endpoint for weekly attendance
+router.get('/weekly', async (req, res) => {
+  try {
+    const { standard, division } = req.query;
+    const schoolId = req.user.id;
+
+    // Get dates for the last 7 days
+    const endDate = new Date();
+    const startDate = new Date();
+    startDate.setDate(endDate.getDate() - 6);
+
+    // Get all attendance records for the date range
+    const attendanceRecords = await Attendance.find({
+      schoolId,
+      standard,
+      division,
+      date: {
+        $gte: startDate,
+        $lte: endDate
+      }
+    });
+
+    // Get total number of students in the class
+    const totalStudents = await Student.countDocuments({
+      schoolId,
+      standard,
+      division
+    });
+
+    // Group attendance by date
+    const weeklyData = [];
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      const currentDate = new Date(d);
+      const dateStr = currentDate.toISOString().split('T')[0];
+      
+      const dayRecords = attendanceRecords.filter(record => 
+        record.date.toISOString().split('T')[0] === dateStr
+      );
+
+      const presentCount = dayRecords.filter(record => 
+        record.status === 'Present' || record.status === 'present'
+      ).length;
+
+      weeklyData.push({
+        date: dateStr,
+        present: presentCount,
+        absent: totalStudents - presentCount,
+        total: totalStudents
+      });
+    }
+
+    res.json(weeklyData);
+
+  } catch (error) {
+    console.error('Error fetching weekly attendance:', error);
+    res.status(500).json({ message: 'Error fetching weekly attendance data' });
   }
 });
 

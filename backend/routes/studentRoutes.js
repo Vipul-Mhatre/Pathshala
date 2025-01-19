@@ -1,12 +1,34 @@
 const express = require('express');
-const { getStudents, getAllStudents } = require('../controllers/studentController');
-const authMiddleware = require('../middleware/authMiddleware');
 const router = express.Router();
+const { 
+  getStudents, 
+  getStudentsByClass,
+  addStudent,
+  bulkAddStudents,
+  updateStudent,
+  deleteStudent 
+} = require('../controllers/studentController');
+const authMiddleware = require('../middleware/authMiddleware');
 
-// Route to get students for a specific school
-router.get('/', authMiddleware, getStudents);
+// Apply auth middleware to all routes
+router.use(authMiddleware);
 
-// Route to get all students (optional, for admin or superuser)
-router.get('/all', authMiddleware, getAllStudents);
+// Get all students for a school
+router.get('/', getStudents);
+
+// Get students by class and division
+router.get('/class', getStudentsByClass);
+
+// Add a single student
+router.post('/', addStudent);
+
+// Bulk add students from JSON
+router.post('/bulk', bulkAddStudents);
+
+// Update a student
+router.put('/:id', updateStudent);
+
+// Delete a student
+router.delete('/:id', deleteStudent);
 
 module.exports = router;

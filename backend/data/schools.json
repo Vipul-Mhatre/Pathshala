@@ -1,23 +1,23 @@
 [
   {
-    "_id": "678895dc445f4fd7bc8efa1f",
+    "_id": "678abeeda736007cbf1a9191",
     "email": "school1@example.com",
     "schoolName": "School One",
-    "address": "4096 E Front Street",
-    "contactNumber": "693.593.6861"
+    "address": "882 Gutmann Light",
+    "contactNumber": "574-365-9258 x348"
   },
   {
-    "_id": "678895dc445f4fd7bc8efa21",
+    "_id": "678abeeea736007cbf1a9193",
     "email": "school2@example.com",
     "schoolName": "School Two",
-    "address": "6664 Blaise Branch",
-    "contactNumber": "876-498-9615"
+    "address": "4177 Feil Circles",
+    "contactNumber": "246.877.1294"
   },
   {
-    "_id": "678895dc445f4fd7bc8efa23",
+    "_id": "678abeeea736007cbf1a9195",
     "email": "school3@example.com",
     "schoolName": "School Three",
-    "address": "802 Gleichner Manors",
-    "contactNumber": "(651) 253-6858"
+    "address": "795 Orchard Road",
+    "contactNumber": "1-947-514-0895 x8902"
   }
 ]

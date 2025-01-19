@@ -1,4 +1,3 @@
-const mongoose = require('mongoose');
 const fs = require('fs');
 const path = require('path');
 const bcrypt = require('bcrypt');
@@ -11,33 +10,30 @@ const Bus = require('../models/Bus');
 const Student = require('../models/Student');
 const User = require('../models/User');
 
-// Log the MongoDB URI to verify it's being read correctly
-console.log('MongoDB URI:', process.env.MONGODB_URI);
-
-// Predefined data from .env.template
-const SCHOOLS = [
-  { 
-    email: 'school1@example.com', 
-    name: 'School One', 
-    password: 'changeme',
-    address: faker.location.streetAddress(),
-    contactNumber: faker.phone.number()
-  },
-  { 
-    email: 'school2@example.com', 
-    name: 'School Two', 
-    password: 'changeme',
-    address: faker.location.streetAddress(),
-    contactNumber: faker.phone.number()
-  },
-  { 
-    email: 'school3@example.com', 
-    name: 'School Three', 
-    password: 'changeme',
-    address: faker.location.streetAddress(),
-    contactNumber: faker.phone.number()
-  }
-];
+// // Predefined data from .env.template
+// const SCHOOLS = [
+//   { 
+//     email: 'school1@example.com', 
+//     name: 'School One', 
+//     password: 'changeme',
+//     address: faker.location.streetAddress(),
+//     contactNumber: faker.phone.number()
+//   },
+//   { 
+//     email: 'school2@example.com', 
+//     name: 'School Two', 
+//     password: 'changeme',
+//     address: faker.location.streetAddress(),
+//     contactNumber: faker.phone.number()
+//   },
+//   { 
+//     email: 'school3@example.com', 
+//     name: 'School Three', 
+//     password: 'changeme',
+//     address: faker.location.streetAddress(),
+//     contactNumber: faker.phone.number()
+//   }
+// ];
 
 const STANDARDS = ['Nursery', 'Jr KG', 'Sr KG', '1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
 const DIVISIONS = ['A', 'B', 'C', 'D', 'E'];
@@ -94,7 +90,7 @@ class DummyDataGenerator {
             password: await bcrypt.hash('studentpassword', 10),
             uhfid: faker.string.alphanumeric(8),
             rc522id: faker.string.alphanumeric(8),
-            rollNo: faker.number.int({ min: 1, max: 500 }),
+            rollNo: (i + (5 * (DIVISIONS.indexOf(division) + (STANDARDS.indexOf(standard) * DIVISIONS.length)))), // Roll number logic
             standard: standard,
             division: division,
             name: faker.person.fullName(),
@@ -149,25 +145,13 @@ class DummyDataGenerator {
     }));
 
     // Write JSON files
-    fs.writeFileSync(path.join(__dirname, '../data/schools.json'), JSON.stringify(schoolsJson, null, 2));
+    // fs.writeFileSync(path.join(__dirname, '../data/schools.json'), JSON.stringify(schoolsJson, null, 2));
     fs.writeFileSync(path.join(__dirname, '../data/buses.json'), JSON.stringify(busesJson, null, 2));
     fs.writeFileSync(path.join(__dirname, '../data/students.json'), JSON.stringify(studentsJson, null, 2));
   }
 
   static async seedDatabase() {
     try {
-      // Validate MongoDB URI
-      if (!process.env.MONGODB_URI) {
-        throw new Error('MONGODB_URI is not defined in environment variables');
-      }
-
-      // Connect to MongoDB
-      await mongoose.connect(process.env.MONGODB_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-      });
-
-      console.log('MongoDB connection successful');
 
       // Clear existing data
       await School.deleteMany({});
@@ -187,7 +171,6 @@ class DummyDataGenerator {
       await this.generateJsonFiles(schools, buses, students);
 
       console.log('Database seeded successfully!');
-      mongoose.connection.close();
     } catch (error) {
       console.error('Detailed Error seeding database:', error);
       process.exit(1);
